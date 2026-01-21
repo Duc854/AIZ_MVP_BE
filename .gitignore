@@ -1,0 +1,36 @@
+## [Visual Studio]
+# Build results
+[Dd]ebug/
+[Rr]elease/
+bin/
+obj/
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Visual Studio 2015/2017 cache/options directory
+.vs/
+
+## [NuGet]
+# Packages folder
+packages/
+# Restore symbol
+project.lock.json
+project.assets.json
+
+## [ASP.NET Core]
+# Local settings (Quan trọng: Không push thông tin DB/Secret lên GitHub)
+appsettings.Development.json
+appsettings.Local.json
+
+## [User Secrets]
+# Nếu bạn dùng Secret Manager
+secrets.json
+
+## [OS specific]
+.DS_Store
+Thumbs.db
