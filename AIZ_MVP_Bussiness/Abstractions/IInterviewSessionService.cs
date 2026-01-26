@@ -14,6 +14,7 @@ namespace AIZ_MVP_Bussiness.Abstractions
         Task<Result<string>> StartInterview(UserIdentity identity, int jobDescriptionId);
         Task<Result> EndInterview(UserIdentity identity, Guid interviewSessionId);
         Task<Result<List<InterviewSessionSummaryDto>>> GetUserInterviewHistory(UserIdentity identity);
-        Task<Result<InterviewSessionDetailDto>> GetInterviewDetail(Guid sessionId, UserIdentity identity);
+        Task<Result<InterviewSummaryDto>> GetInterviewDetail(Guid sessionId, UserIdentity identity);
+        Task<Result<InterviewDetailDto>> GetInterviewDetailDto(Guid sessionId, UserIdentity identity);
     }
 }

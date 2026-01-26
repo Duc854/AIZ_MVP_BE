@@ -21,6 +21,11 @@ namespace AIZ_MVP_Data.Repositories
         {
             return await _dbContext.Licenses.FirstOrDefaultAsync(l => l.UserId == userId);
         }
+
+        public async Task<License?> GetLicenseByUserIdForUpdate(Guid userId)
+        {
+            return await _dbContext.Licenses.FirstOrDefaultAsync(l => l.UserId == userId);
+        }
         public async Task<bool> HasValidLicenseAsync(Guid userId)
         {
             var now = DateTime.UtcNow;
@@ -35,6 +40,11 @@ namespace AIZ_MVP_Data.Repositories
                         l.ExpiredAt > now
                     )
                 );
+        }
+
+        public void Add(License license)
+        {
+            _dbContext.Licenses.Add(license);
         }
     }
 }

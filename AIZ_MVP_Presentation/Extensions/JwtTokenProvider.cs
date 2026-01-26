@@ -19,9 +19,11 @@ namespace AIZ_MVP_Presentation.Extensions
         public string GenerateAccessToken(string userId, string username, string role)
         {
             var jwtKey = _jwtSettings.Key
-                ?? throw new InvalidOperationException("JWT Key is not configured.");
+    ?? throw new InvalidOperationException("JWT Key is not configured.");
 
-            var key = Encoding.UTF8.GetBytes(jwtKey);
+            // derive 32 bytes key for HS256
+            var key = SHA256.HashData(Encoding.UTF8.GetBytes(jwtKey));
+
             var expireString = _jwtSettings.ExpireMinutes
                 ?? throw new InvalidOperationException("JWT ExpireMinutes is not configured.");
             var expireMinutes = int.Parse(expireString);

@@ -122,17 +122,28 @@ namespace AIZ_MVP_Presentation.Controllers
                 });
             }
 
-            var result = await _interviewSessionService.GetInterviewDetail(sessionId, identity!);
+         
+            var result = await _interviewSessionService.GetInterviewDetailDto(sessionId, identity!);
             if (!result.IsSuccess)
             {
-                // Giữ nguyên logic trả về lỗi theo pattern của bạn
-                return BadRequest(new ApiResponse<object>
+                // Map error codes to appropriate HTTP status codes
+                var statusCode = result.Error!.Code switch
                 {
-                    Error = new ApiError { Code = result.Error!.Code, Message = result.Error!.Message }
+                    "NOT_FOUND" => 404,
+                    "FORBIDDEN" => 403,
+                    "UNAUTHORIZED" => 401,
+                    "DB_SCHEMA_ERROR" => 500, 
+                    "INTERNAL_ERROR" => 500,
+                    _ => 400
+                };
+
+                return StatusCode(statusCode, new ApiResponse<object>
+                {
+                    Error = new ApiError { Code = result.Error.Code, Message = result.Error.Message }
                 });
             }
 
-            return Ok(new ApiResponse<InterviewSessionDetailDto> { Data = result.Value });
+            return Ok(new ApiResponse<InterviewDetailDto> { Data = result.Value });
         }
     }
 }

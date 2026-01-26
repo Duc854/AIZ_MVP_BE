@@ -10,5 +10,6 @@ namespace AIZ_MVP_Data.Abstractions
     public interface IJobDescriptionRepository
     {
         Task<List<JobDescription>> GetAllJobDescriptionsAsync();
+        Task<JobDescription?> GetJobDescriptionByIdAsync(int id);
     }
 }

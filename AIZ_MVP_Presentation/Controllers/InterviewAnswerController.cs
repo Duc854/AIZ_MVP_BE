@@ -1,11 +1,11 @@
 ﻿using AIZ_MVP_Bussiness.Abstractions;
 using AIZ_MVP_Bussiness.Dtos.RequestDtos;
-using AIZ_MVP_Bussiness.Services;
 using AIZ_MVP_Presentation.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Wrappers;
+using System.Linq;
 
 namespace AIZ_MVP_Presentation.Controllers
 {
@@ -13,8 +13,8 @@ namespace AIZ_MVP_Presentation.Controllers
     [ApiController]
     public class InterviewAnswerController : ControllerBase
     {
-        private readonly InterviewAnswerService _interviewAnswerService;
-        public InterviewAnswerController(InterviewAnswerService interviewAnswerService)
+        private readonly IInterviewAnswerService _interviewAnswerService;
+        public InterviewAnswerController(IInterviewAnswerService interviewAnswerService)
         {
             _interviewAnswerService = interviewAnswerService;
         }
@@ -23,6 +23,30 @@ namespace AIZ_MVP_Presentation.Controllers
         [HttpPost("save-answer")]
         public async Task<IActionResult> SaveInterviewAnswer([FromBody] SaveInterviewAnswerDto dto)
         {
+            // Validate ModelState (data annotations)
+            if (!ModelState.IsValid)
+            {
+                var validationErrors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .SelectMany(x => x.Value!.Errors.Select(e => new
+                    {
+                        Field = x.Key,
+                        Message = e.ErrorMessage ?? "Invalid value"
+                    }))
+                    .ToList();
+
+                var errorDetails = string.Join("; ", validationErrors.Select(e => $"{e.Field}: {e.Message}"));
+
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = new ApiError
+                    {
+                        Code = "VALIDATION_ERROR",
+                        Message = $"Request validation failed. Errors: {errorDetails}"
+                    }
+                });
+            }
+
             var identity = HttpContext.GetUserIdentity();
             if (identity == null)
             {
@@ -35,10 +59,21 @@ namespace AIZ_MVP_Presentation.Controllers
                     }
                 });
             }
+
             var result = await _interviewAnswerService.SaveAnswer(dto, identity);
             if (!result.IsSuccess)
             {
-                return BadRequest(new ApiResponse<object>
+                // Map error codes to appropriate HTTP status codes
+                var statusCode = result.Error!.Code switch
+                {
+                    "TURN_NOT_FOUND" => StatusCodes.Status404NotFound,
+                    "FORBIDDEN" => StatusCodes.Status403Forbidden,
+                    "UNAUTHORIZED" => StatusCodes.Status401Unauthorized,
+                    "DB_ERROR" => StatusCodes.Status500InternalServerError,
+                    _ => StatusCodes.Status400BadRequest
+                };
+
+                return StatusCode(statusCode, new ApiResponse<object>
                 {
                     Error = new ApiError
                     {
@@ -47,7 +82,11 @@ namespace AIZ_MVP_Presentation.Controllers
                     }
                 });
             }
-            return Ok(new ApiResponse<object>());
+
+            return Ok(new ApiResponse<Guid>
+            {
+                Data = result.Value
+            });
         }
     }
 }

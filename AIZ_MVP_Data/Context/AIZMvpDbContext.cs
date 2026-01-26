@@ -92,6 +92,30 @@ namespace AIZ_MVP_Data.Context
 
             modelBuilder.Entity<InterviewAnswer>()
                 .HasIndex(a => a.InterviewTurnId);
+
+            // DECIMAL PRECISION CONFIGURATION
+            // InterviewEvaluation.Score: 0-100 with 2 decimal places (e.g., 85.50)
+            modelBuilder.Entity<InterviewEvaluation>()
+                .Property(e => e.Score)
+                .HasPrecision(5, 2);
+
+            // InterviewReport.OverallScore: 0-100 with 2 decimal places
+            modelBuilder.Entity<InterviewReport>()
+                .Property(r => r.OverallScore)
+                .HasPrecision(5, 2);
+
+            // PaymentTransaction: Money fields with 2 decimal places
+            modelBuilder.Entity<PaymentTransaction>()
+                .Property(p => p.Price)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .Property(p => p.Amount)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<PaymentTransaction>()
+                .Property(p => p.Discount)
+                .HasPrecision(18, 2);
         }
     }
 }

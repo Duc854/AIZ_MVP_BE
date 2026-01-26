@@ -23,7 +23,20 @@ namespace AIZ_MVP_Data.Repositories
                 int turnIndex)
         {
             return await _dbContext.InterviewTurns
+                .Include(t => t.InterviewSession)
                 .AsNoTracking()
+                .FirstOrDefaultAsync(t =>
+                    t.InterviewSessionId == interviewSessionId &&
+                    t.TurnIndex == turnIndex);
+        }
+
+        public async Task<InterviewTurn?> GetBySessionAndTurnForUpdate(
+                Guid interviewSessionId,
+                int turnIndex)
+        {
+            return await _dbContext.InterviewTurns
+                .Include(t => t.InterviewSession)
+                .Include(t => t.Answer) // Include answer to check if it already exists
                 .FirstOrDefaultAsync(t =>
                     t.InterviewSessionId == interviewSessionId &&
                     t.TurnIndex == turnIndex);
