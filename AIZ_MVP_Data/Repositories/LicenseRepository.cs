@@ -19,7 +19,7 @@ namespace AIZ_MVP_Data.Repositories
         }
         public async Task<License?> GetLicenseByUserId(Guid userId)
         {
-            return await _dbContext.Licenses.FirstOrDefaultAsync(l => l.UserId == userId);
+            return await _dbContext.Licenses.AsNoTracking().FirstOrDefaultAsync(l => l.UserId == userId);
         }
 
         public async Task<License?> GetLicenseByUserIdForUpdate(Guid userId)

@@ -92,6 +92,9 @@ namespace AIZ_MVP_Data.Context
 
             modelBuilder.Entity<InterviewAnswer>()
                 .HasIndex(a => a.InterviewTurnId);
+            modelBuilder.Entity<PaymentTransaction>()
+                .HasIndex(t => t.TransactionCode)
+                .IsUnique();
 
             // DECIMAL PRECISION CONFIGURATION
             // InterviewEvaluation.Score: 0-100 with 2 decimal places (e.g., 85.50)

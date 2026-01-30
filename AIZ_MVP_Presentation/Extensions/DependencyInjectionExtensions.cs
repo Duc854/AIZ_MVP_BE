@@ -28,6 +28,7 @@ namespace AIZ_MVP_Presentation.Extensions
             services.AddScoped<IInterviewTurnRepository, InterviewTurnRepository>();
             services.AddScoped<IInterviewAnswerRepository, InterviewAnswerRepository>();
             services.AddScoped<IInterviewEvaluationRepository, InterviewEvaluationRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             //Add Service
             services.AddScoped<IAuthService, AuthService>();
@@ -37,6 +38,7 @@ namespace AIZ_MVP_Presentation.Extensions
             services.AddScoped<IInterviewTurnService, InterviewTurnService>();
             services.AddScoped<IInterviewAnswerService, InterviewAnswerService>();
             services.AddScoped<IInterviewEvaluationService, InterviewEvaluationService>();
+            services.AddScoped<IPaymentService, PaymentService>();
             return services;
         }
     }
