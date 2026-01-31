@@ -92,6 +92,7 @@ namespace AIZ_MVP_Data.Context
 
             modelBuilder.Entity<InterviewAnswer>()
                 .HasIndex(a => a.InterviewTurnId);
+
             modelBuilder.Entity<PaymentTransaction>()
                 .HasIndex(t => t.TransactionCode)
                 .IsUnique();
