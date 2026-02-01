@@ -26,6 +26,9 @@ services:
       - ConnectionStrings__SQLSeverConnection=Server=db;Database=ASM1_PRN232;User Id=sa;Password=MatKhauSieuManh123!;TrustServerCertificate=True;
       # Cấu hình JWT
       - Jwt__Key=AI_Interview_by_Zenith_v1_2026
+      - Jwt__ExpireMinutes=120
+      - Jwt__Issuer=AIZAPI
+      - Jwt__Audience=AZIFrontend
     depends_on:
       - db
     networks:
