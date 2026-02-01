@@ -1,0 +1,36 @@
+services:
+  # 1. Database SQL Server (Microsoft SQL Server 2022)
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_server_db
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=MatKhauSieuManh123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./sql-data:/var/opt/mssql # Lưu dữ liệu ra ngoài để không mất khi tắt container
+    networks:
+      - my-network
+
+  # 2. Backend .NET API
+  backend:
+    build: .
+    container_name: dotnet_backend
+    ports:
+      - "8080:8080" # Map cổng 8080 trong docker ra cổng 8080 của VPS
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      # GHI ĐÈ Connection String trong appsettings.json tại đây
+      # Lưu ý: Server=db (tên service ở trên), không phải localhost
+      - ConnectionStrings__SQLSeverConnection=Server=db;Database=ASM1_PRN232;User Id=sa;Password=MatKhauSieuManh123!;TrustServerCertificate=True;
+      # Cấu hình JWT
+      - Jwt__Key=AI_Interview_by_Zenith_v1_2026
+    depends_on:
+      - db
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
