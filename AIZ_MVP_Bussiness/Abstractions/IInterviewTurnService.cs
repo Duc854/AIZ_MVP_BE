@@ -15,6 +15,7 @@ namespace AIZ_MVP_Bussiness.Abstractions
         //Src cho truong hop su dung BE call API AI de gen question
         //Task<Result<QuestionResponseDto>> GenerateQuestion(RequestGenerateQuestionDto dto, UserIdentity identity);
 
-        Task<Result> SaveInterviewTurn(SaveInterviewTurnDto dto, UserIdentity identity);
+        Task<Result<Guid>> SaveInterviewTurn(SaveInterviewTurnDto dto, UserIdentity identity);
+        Task<Result<Guid>> GetTurnIdBySessionAndIndex(Guid sessionId, int turnIndex, UserIdentity identity);
     }
 }

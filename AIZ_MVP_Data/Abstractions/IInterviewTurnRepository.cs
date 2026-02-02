@@ -11,6 +11,6 @@ namespace AIZ_MVP_Data.Abstractions
     {
         void Add(InterviewTurn interviewTurn);
         Task<InterviewTurn?> GetBySessionAndTurn(Guid interviewSessionId, int turnIndex);
-
+        Task<InterviewTurn?> GetBySessionAndTurnForUpdate(Guid interviewSessionId, int turnIndex);
     }
 }

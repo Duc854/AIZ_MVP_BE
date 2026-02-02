@@ -11,6 +11,6 @@ namespace AIZ_MVP_Bussiness.Abstractions
 {
     public interface IInterviewAnswerService
     {
-        Task<Result> SaveAnswer(SaveInterviewAnswerDto dto, UserIdentity identity);
+        Task<Result<Guid>> SaveAnswer(SaveInterviewAnswerDto dto, UserIdentity identity);
     }
 }

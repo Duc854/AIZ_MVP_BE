@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace AIZ_MVP_Data.Abstractions
 {
-    public interface IInterviewEvaluationRepository
+    public interface IPaymentRepository
     {
-        void Add(InterviewEvaluation interviewEvaluation);
-        Task<InterviewEvaluation?> GetEvaluationByAnswerId(Guid interviewAnswerId);
+        Task<PaymentTransaction?> GetByCodeForUpdate(string code);
+        void Add(PaymentTransaction transaction);
     }
 }

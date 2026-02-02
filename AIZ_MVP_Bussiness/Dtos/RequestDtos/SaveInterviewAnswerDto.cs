@@ -1,15 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace AIZ_MVP_Bussiness.Dtos.RequestDtos
 {
+    /// <summary>
+    /// DTO for saving interview answer. Uses TurnIndex to find the turn (since save-turn returns turnId).
+    /// </summary>
     public class SaveInterviewAnswerDto
     {
+        [Required(ErrorMessage = "InterviewSessionId is required")]
         public Guid InterviewSessionId { get; set; }
+
+        [Required(ErrorMessage = "TurnIndex is required")]
+        [Range(1, int.MaxValue, ErrorMessage = "TurnIndex must be greater than 0")]
         public int TurnIndex { get; set; }
-        public string AnswerText { get; set; } = null!;
+
+        [Required(ErrorMessage = "UserAnswer is required")]
+        [MinLength(1, ErrorMessage = "UserAnswer cannot be empty")]
+        public string UserAnswer { get; set; } = null!; // Maps to AnswerText in entity
     }
 }

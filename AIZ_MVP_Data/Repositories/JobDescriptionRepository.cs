@@ -22,5 +22,10 @@ namespace AIZ_MVP_Data.Repositories
         {
             return await _dbContext.JobDescriptions.ToListAsync();
         }
+
+        public async Task<JobDescription?> GetJobDescriptionByIdAsync(int id)
+        {
+            return await _dbContext.JobDescriptions.FindAsync(id);
+        }
     }
 }

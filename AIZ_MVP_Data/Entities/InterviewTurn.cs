@@ -13,6 +13,7 @@ namespace AIZ_MVP_Data.Entities
         public InterviewSession InterviewSession { get; set; } = null!;
         public string? QuestionId { get; set; }
         public string QuestionContent { get; set; } = null!;
+        public string? Topic { get; set; }
         public string Difficulty { get; set; } = null!;
         public int TurnIndex { get; set; }
         public string Status { get; set; } = "Pending";

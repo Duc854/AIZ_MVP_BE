@@ -23,6 +23,38 @@ namespace AIZ_MVP_Presentation.Controllers
         [HttpPost("save-turn")]
         public async Task<IActionResult> SaveInterviewTurn([FromBody] SaveInterviewTurnDto dto)
         {
+    
+            if (string.IsNullOrWhiteSpace(dto.ResolvedQuestionText))
+            {
+                ModelState.AddModelError(
+                    nameof(dto.QuestionText), 
+                    "Either 'questionText' or 'questionContent' field is required");
+            }
+
+            // Validate ModelState (data annotations)
+            if (!ModelState.IsValid)
+            {
+                var validationErrors = ModelState
+                    .Where(x => x.Value?.Errors.Count > 0)
+                    .SelectMany(x => x.Value!.Errors.Select(e => new
+                    {
+                        Field = x.Key,
+                        Message = e.ErrorMessage ?? "Invalid value"
+                    }))
+                    .ToList();
+
+                var errorDetails = string.Join("; ", validationErrors.Select(e => $"{e.Field}: {e.Message}"));
+
+                return BadRequest(new ApiResponse<object>
+                {
+                    Error = new ApiError
+                    {
+                        Code = "VALIDATION_ERROR",
+                        Message = $"Request validation failed. Errors: {errorDetails}"
+                    }
+                });
+            }
+
             var identity = HttpContext.GetUserIdentity();
             if (identity == null)
             {
@@ -35,6 +67,7 @@ namespace AIZ_MVP_Presentation.Controllers
                     }
                 });
             }
+
             var result = await _interviewTurnService.SaveInterviewTurn(dto, identity);
             if (!result.IsSuccess)
             {
@@ -47,7 +80,58 @@ namespace AIZ_MVP_Presentation.Controllers
                     }
                 });
             }
-            return Ok(new ApiResponse<object>());
+
+            return Ok(new ApiResponse<Guid>
+            {
+                Data = result.Value
+            });
+        }
+
+        [Authorize]
+        [HttpGet("by-session-and-index")]
+        public async Task<IActionResult> GetTurnIdBySessionAndIndex(
+            [FromQuery] Guid sessionId,
+            [FromQuery] int turnIndex)
+        {
+            var identity = HttpContext.GetUserIdentity();
+            if (identity == null)
+            {
+                return Unauthorized(new ApiResponse<object>
+                {
+                    Error = new ApiError
+                    {
+                        Code = "UNAUTHORIZED",
+                        Message = "User identity not found"
+                    }
+                });
+            }
+
+            var result = await _interviewTurnService.GetTurnIdBySessionAndIndex(sessionId, turnIndex, identity);
+            if (!result.IsSuccess)
+            {
+                var statusCode = result.Error!.Code switch
+                {
+                    "TURN_NOT_FOUND" => StatusCodes.Status404NotFound,
+                    "SESSION_NOT_FOUND" => StatusCodes.Status404NotFound,
+                    "FORBIDDEN" => StatusCodes.Status403Forbidden,
+                    "UNAUTHORIZED_USER" => StatusCodes.Status401Unauthorized,
+                    _ => StatusCodes.Status400BadRequest
+                };
+
+                return StatusCode(statusCode, new ApiResponse<object>
+                {
+                    Error = new ApiError
+                    {
+                        Code = result.Error!.Code,
+                        Message = result.Error!.Message
+                    }
+                });
+            }
+
+            return Ok(new ApiResponse<Guid>
+            {
+                Data = result.Value
+            });
         }
 
 

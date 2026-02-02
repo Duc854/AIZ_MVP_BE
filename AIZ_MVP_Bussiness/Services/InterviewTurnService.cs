@@ -26,43 +26,65 @@ namespace AIZ_MVP_Bussiness.Services
             _uow = uow; 
         }
 
-        public async Task<Result> SaveInterviewTurn(SaveInterviewTurnDto dto, UserIdentity identity)
+        public async Task<Result<Guid>> SaveInterviewTurn(SaveInterviewTurnDto dto, UserIdentity identity)
         {
             if (!Guid.TryParse(identity.UserId, out var userId))
             {
-                return Result.Fail(
+                return Result<Guid>.Fail(
                     new Error("UNAUTHORIZED_USER", "Invalid user identity"));
             }
             var session = await _interviewSessionRepository.GetInterviewSessionToUpdate(dto.InterviewSessionId);
             if (session == null)
             {
-                return Result.Fail(
+                return Result<Guid>.Fail(
                     new Error("SESSION_NOT_FOUND", "Interview session not found")
                 );
             }
             if (session.Status != "InProgress")
             {
-                return Result.Fail(
+                return Result<Guid>.Fail(
                     new Error("INTERVIEW_SESSION_CLOSED", "This interview session is closed and cannot accept further responses")
                 );
             }
             if (session.UserId != userId)
             {
-                return Result.Fail(
+                return Result<Guid>.Fail(
                     new Error("FORBIDDEN", "You do not own this interview session"));
             }
-            if (dto.TurnIndex != session.CurrentTurnIndex + 1) //Dang su dung FE call thang API AI nen current index se lay tu reponse cua AI nen se lon hon turn truoc (turn dc luu trong DB)
+
+            // Idempotent behavior: Check if turn already exists for this session+turnIndex
+            var existingTurn = await _interviewTurnRepository.GetBySessionAndTurn(dto.InterviewSessionId, dto.TurnIndex);
+            if (existingTurn != null)
             {
-                return Result.Fail(
-                    new Error("WRONG_TURN", "Turn index does not match the current session state"));
+                // Turn already exists - return existing turn ID (idempotent)
+                return Result<Guid>.Success(existingTurn.Id);
             }
+
+            // Validate turnIndex sequence only if creating new turn
+            if (dto.TurnIndex != session.CurrentTurnIndex + 1)
+            {
+                // Check if there's a turn for the expected next index (might be a retry scenario)
+                var expectedTurn = await _interviewTurnRepository.GetBySessionAndTurn(dto.InterviewSessionId, session.CurrentTurnIndex + 1);
+                if (expectedTurn != null)
+                {
+                    // Return the expected turn ID instead of error (helps with retry scenarios)
+                    return Result<Guid>.Success(expectedTurn.Id);
+                }
+
+                // If no expected turn exists, return error (genuine mismatch)
+                return Result<Guid>.Fail(
+                    new Error("WRONG_TURN", $"Turn index {dto.TurnIndex} does not match expected next turn index {session.CurrentTurnIndex + 1}"));
+            }
+
+            // Create new turn
             session.CurrentTurnIndex = dto.TurnIndex;
             var interviewTurn = new InterviewTurn
             {
                 Id = Guid.NewGuid(),
                 InterviewSessionId = dto.InterviewSessionId,
                 QuestionId = dto.QuestionId,
-                QuestionContent = dto.QuestionContent,
+                QuestionContent = dto.ResolvedQuestionText, // Use resolved value (supports both QuestionText and QuestionContent)
+                Topic = dto.Topic,
                 TurnIndex = dto.TurnIndex,
                 Difficulty = dto.Difficulty,
             };
@@ -70,14 +92,64 @@ namespace AIZ_MVP_Bussiness.Services
             try
             {
                 await _uow.SaveChangesAsync();
-                return Result.Success();
+                return Result<Guid>.Success(interviewTurn.Id);
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
-                return Result.Fail(
-                    new Error("DB_ERROR", "Cannot create interview turn")
+                // If unique constraint violation (turn already exists), try to get existing turn
+                var innerException = ex.InnerException;
+                if (innerException != null && innerException.Message.Contains("UNIQUE") || innerException.Message.Contains("duplicate"))
+                {
+                    var existingTurnAfterError = await _interviewTurnRepository.GetBySessionAndTurn(dto.InterviewSessionId, dto.TurnIndex);
+                    if (existingTurnAfterError != null)
+                    {
+                        // Return existing turn ID (idempotent behavior)
+                        return Result<Guid>.Success(existingTurnAfterError.Id);
+                    }
+                }
+
+                // Log the actual SQL exception for debugging
+                var errorMessage = "Cannot create interview turn";
+                if (innerException != null)
+                {
+                    errorMessage = $"{errorMessage}. Details: {innerException.Message}";
+                }
+                
+                return Result<Guid>.Fail(
+                    new Error("DB_ERROR", errorMessage)
                 );
             }
+        }
+
+        public async Task<Result<Guid>> GetTurnIdBySessionAndIndex(Guid sessionId, int turnIndex, UserIdentity identity)
+        {
+            if (!Guid.TryParse(identity.UserId, out var userId))
+            {
+                return Result<Guid>.Fail(
+                    new Error("UNAUTHORIZED_USER", "Invalid user identity"));
+            }
+
+            var session = await _interviewSessionRepository.GetInterviewSessionToUpdate(sessionId);
+            if (session == null)
+            {
+                return Result<Guid>.Fail(
+                    new Error("SESSION_NOT_FOUND", "Interview session not found"));
+            }
+
+            if (session.UserId != userId)
+            {
+                return Result<Guid>.Fail(
+                    new Error("FORBIDDEN", "You do not own this interview session"));
+            }
+
+            var turn = await _interviewTurnRepository.GetBySessionAndTurn(sessionId, turnIndex);
+            if (turn == null)
+            {
+                return Result<Guid>.Fail(
+                    new Error("TURN_NOT_FOUND", $"Turn with index {turnIndex} not found for this session"));
+            }
+
+            return Result<Guid>.Success(turn.Id);
         }
 
         //Src code cho truong hop su dung be goi AI api de xay dung interview stateful 

@@ -11,6 +11,6 @@ namespace AIZ_MVP_Bussiness.Abstractions
 {
     public interface IInterviewEvaluationService
     {
-        Task<Result> SaveEvaluation(SaveEvaluationDto dto, UserIdentity identity);
+        Task<Result<Guid>> SaveEvaluation(SaveEvaluationDto dto, UserIdentity identity);
     }
 }

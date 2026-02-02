@@ -10,6 +10,8 @@ namespace AIZ_MVP_Data.Abstractions
     public interface ILicenseRepository
     {
         Task<License?> GetLicenseByUserId(Guid userId);
+        Task<License?> GetLicenseByUserIdForUpdate(Guid userId);
         Task<bool> HasValidLicenseAsync(Guid userId);
+        void Add(License license);
     }
 }

@@ -31,5 +31,22 @@ namespace AIZ_MVP_Data.Repositories
                 .FirstOrDefaultAsync(a => a.InterviewTurn.InterviewSessionId == sessionId
                                        && a.InterviewTurn.TurnIndex == turnIndex);
         }
+
+        public async Task<InterviewAnswer?> GetAnswerByTurnIdForUpdate(Guid interviewTurnId)
+        {
+            // Get answer by turn ID without AsNoTracking() so it can be updated
+            return await _dbContext.InterviewAnswers
+                .Include(a => a.InterviewTurn)
+                    .ThenInclude(t => t.InterviewSession)
+                .FirstOrDefaultAsync(a => a.InterviewTurnId == interviewTurnId);
+        }
+
+        public async Task<InterviewAnswer?> GetAnswerById(Guid answerId)
+        {
+            return await _dbContext.InterviewAnswers
+                .Include(a => a.InterviewTurn)
+                    .ThenInclude(t => t.InterviewSession)
+                .FirstOrDefaultAsync(a => a.Id == answerId);
+        }
     }
 }

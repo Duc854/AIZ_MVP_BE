@@ -59,7 +59,11 @@ namespace AIZ_MVP_Data.Migrations
                     b.Property<Guid>("InterviewAnswerId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<decimal>("Score")
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal?>("Score")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -166,6 +170,9 @@ namespace AIZ_MVP_Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Topic")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("TurnIndex")
                         .HasColumnType("int");
 
@@ -194,9 +201,19 @@ namespace AIZ_MVP_Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.Property<string>("Sector")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.HasKey("Id");
 

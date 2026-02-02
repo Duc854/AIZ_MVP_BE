@@ -26,7 +26,9 @@ namespace AIZ_MVP_Presentation.Configurations
                     ValidateAudience = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
+                    IssuerSigningKey = new SymmetricSecurityKey(
+    System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(secretKey))
+),
                     RoleClaimType = ClaimTypes.Role,
                     ClockSkew = TimeSpan.Zero
                 };
