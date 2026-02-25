@@ -50,8 +50,8 @@ namespace AIZ_MVP_Bussiness.Services
             _paymentRepo.Add(transaction);
             await _uow.SaveChangesAsync();
             string bank = "MBBank";
-            string accNo = "123456789";
-            var qrUrl = $"https://qr.sepay.vn/img?bank={bank}&acc={accNo}&template=compact&amount={price}&des={transCode}";
+            string accNo = "2913069999";
+            var qrUrl = $"https://qr.sepay.vn/img?bank={bank}&acc={accNo}&template=template&amount={price}&des={transCode}";
 
             return new { qrUrl, transCode };
         }
