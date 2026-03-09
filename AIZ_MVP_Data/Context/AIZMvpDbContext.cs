@@ -34,6 +34,12 @@ namespace AIZ_MVP_Data.Context
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.Email)
                 .IsUnique();
+            //LICENSE
+            modelBuilder.Entity<License>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // REFRESH TOKEN
             modelBuilder.Entity<RefreshToken>()

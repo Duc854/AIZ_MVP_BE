@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using AIZ_MVP_Bussiness.Dtos.ResponseDtos;
 using AIZ_MVP_Bussiness.Dtos.AuthDtos;
 using AIZ_MVP_Data.Repositories;
+using AIZ_MVP_Bussiness.Extensions;
 
 namespace AIZ_MVP_Bussiness.Services
 {
@@ -19,15 +20,18 @@ namespace AIZ_MVP_Bussiness.Services
         private readonly IPasswordHasher _passwordHasher;
         private readonly ITokenProvider _tokenProvider;
         private readonly IUserRepository _userRepository;
+        private readonly ILicenseRepository _licenseRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUnitOfWork _uow;
         public AuthService(
             IUserRepository userRepository,
+            ILicenseRepository licenseRepository,
             IPasswordHasher passwordHasher,
             ITokenProvider tokenProvider,
             IRefreshTokenRepository refreshTokenRepository, IUnitOfWork uow)
         {
             _userRepository = userRepository;
+            _licenseRepository = licenseRepository;
             _passwordHasher = passwordHasher;
             _tokenProvider = tokenProvider;
             _refreshTokenRepository = refreshTokenRepository;   
@@ -44,14 +48,14 @@ namespace AIZ_MVP_Bussiness.Services
                     new Error("EMAIL_EXISTS", "Email already exists")
                 );
             }
-             _userRepository.Add(
-                new User
-                {
-                    FullName = dto.FullName,
-                    Email = dto.Email,
-                    PasswordHash = _passwordHasher.HashPassword(dto.Password)
-                });
-
+            var user = new User
+            {
+                FullName = dto.FullName,
+                Email = dto.Email,
+                PasswordHash = _passwordHasher.HashPassword(dto.Password)
+            };
+             _userRepository.Add(user);
+            _licenseRepository.Add(LicenseFactory.CreateFreeLicense(user.Id));
             try
             {
                 await _uow.SaveChangesAsync();

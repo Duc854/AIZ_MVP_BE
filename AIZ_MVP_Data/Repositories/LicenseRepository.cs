@@ -46,5 +46,27 @@ namespace AIZ_MVP_Data.Repositories
         {
             _dbContext.Licenses.Add(license);
         }
+
+        public void Remove(License license)
+        {
+            _dbContext.Licenses.Remove(license);
+        }
+
+        public async Task<License?> GetFreeTrialLicenseAsync(Guid userId)
+        {
+            var now = DateTime.UtcNow;
+            return await _dbContext.Licenses
+                .FirstOrDefaultAsync(l =>
+                    l.UserId == userId &&
+                    l.IsActive &&
+                    l.LicenseKey.StartsWith("FREE")
+                    &&
+                    (
+                        l.ExpiredAt == null ||
+                        l.ExpiredAt > now
+                    )
+                    );
+        }
+
     }
 }
