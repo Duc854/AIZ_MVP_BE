@@ -38,8 +38,7 @@ namespace AIZ_MVP_Bussiness.Services
             _logger = logger;
         }
 
-        //Start interview
-        public async Task<Result<string>> StartInterview(
+       public async Task<Result<string>> StartInterview(
             UserIdentity identity,
             int jobDescriptionId)
         {
@@ -57,34 +56,14 @@ namespace AIZ_MVP_Bussiness.Services
                     new Error("JOB_DESCRIPTION_NOT_FOUND", "Job description not found"));
             }
 
-            // MVP Mode: Auto-create free license if user doesn't have one
+            // Change from MVP to real version 
             var hasValidLicense = await _licenseRepository.HasValidLicenseAsync(userId);
+
             if (!hasValidLicense)
             {
-                var existingLicense = await _licenseRepository.GetLicenseByUserIdForUpdate(userId);
-                if (existingLicense == null)
-                {
-                    // Create a free license for MVP
-                    var freeLicense = new License
-                    {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        LicenseKey = $"FREE-{userId}-{DateTime.UtcNow:yyyyMMddHHmmss}",
-                        Plan = "Free",
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
-                        ExpiredAt = null // Free license never expires in MVP
-                    };
-                    _licenseRepository.Add(freeLicense);
-                }
-                else
-                {
-                    // Reactivate existing license if inactive
-                    existingLicense.IsActive = true;
-                    existingLicense.ExpiredAt = null;
-                }
+                return Result<string>.Fail(
+                    new Error("LICENSE_INVALID", "License is expired or inactive"));
             }
-
             var session = new InterviewSession
             {
                 Id = Guid.NewGuid(),
@@ -104,6 +83,7 @@ namespace AIZ_MVP_Bussiness.Services
                 );
             }
         }
+
 
         //End interview
         public async Task<Result> EndInterview(
