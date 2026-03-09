@@ -38,8 +38,7 @@ namespace AIZ_MVP_Bussiness.Services
             _logger = logger;
         }
 
-        //Start interview
-        public async Task<Result<string>> StartInterview(
+       public async Task<Result<string>> StartInterview(
             UserIdentity identity,
             int jobDescriptionId)
         {
@@ -83,7 +82,6 @@ namespace AIZ_MVP_Bussiness.Services
                 return Result<string>.Fail(
                     new Error("LICENSE_INVALID", "License is expired or inactive"));
             }
-
             var session = new InterviewSession
             {
                 Id = Guid.NewGuid(),
@@ -103,6 +101,7 @@ namespace AIZ_MVP_Bussiness.Services
                 );
             }
         }
+
 
         //End interview
         public async Task<Result> EndInterview(
