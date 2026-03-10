@@ -8,10 +8,15 @@ namespace AIZ_MVP_Bussiness.Dtos.RequestDtos
 {
     public class SePayWebhookModel
     {
-        public string content { get; set; }        // Nội dung chuyển khoản
-        public decimal transferAmount { get; set; } // Số tiền nhận được
-        public string accountNumber { get; set; }  // Số tài khoản ngân hàng của bạn
-        public string transactionDate { get; set; } // Thời gian giao dịch
-        public string referenceCode { get; set; } // Mã tham chiếu của ngân hàng
+        public long id { get; set; }
+        public string gateway { get; set; }
+        public string transactionDate { get; set; }
+        public string accountNumber { get; set; }
+        public string content { get; set; }
+        public decimal transferAmount { get; set; }
+        public string transferType { get; set; }
+        public string referenceCode { get; set; }
+        public decimal? accumulated { get; set; }
+        public string code { get; set; }
     }
 }
