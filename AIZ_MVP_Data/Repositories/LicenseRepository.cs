@@ -26,13 +26,12 @@ namespace AIZ_MVP_Data.Repositories
         {
             return await _dbContext.Licenses.FirstOrDefaultAsync(l => l.UserId == userId);
         }
-        public async Task<bool> HasValidLicenseAsync(Guid userId)
+        public async Task<License?> GetValidLicenseAsync(Guid userId)
         {
             var now = DateTime.UtcNow;
 
             return await _dbContext.Licenses
-                .AsNoTracking()
-                .AnyAsync(l =>
+                .FirstOrDefaultAsync(l =>
                     l.UserId == userId &&
                     l.IsActive &&
                     (

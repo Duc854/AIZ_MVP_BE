@@ -75,12 +75,16 @@ namespace AIZ_MVP_Bussiness.Services
             }
 
             // Change from MVP to real version 
-            var hasValidLicense = await _licenseRepository.HasValidLicenseAsync(userId);
+            var validLicense = await _licenseRepository.GetValidLicenseAsync(userId);
 
-            if (!hasValidLicense)
+            if (validLicense == null)
             {
                 return Result<string>.Fail(
                     new Error("LICENSE_INVALID", "License is expired or inactive"));
+            }
+            if(validLicense.Plan == "PerTurn")
+            {
+                _licenseRepository.Remove(validLicense);
             }
             var session = new InterviewSession
             {

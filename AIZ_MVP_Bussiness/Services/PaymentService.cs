@@ -75,26 +75,64 @@ namespace AIZ_MVP_Bussiness.Services
 
                 if (license == null)
                 {
-                    license = new License
+                    if (transferAmount == 10000)
                     {
-                        Id = Guid.NewGuid(),
-                        UserId = trans.UserId,
-                        LicenseKey = Guid.NewGuid().ToString("N").ToUpper(),
-                        Plan = "Monthly",
-                        IsActive = true,
-                        CreatedAt = DateTime.UtcNow,
-                        ExpiredAt = DateTime.UtcNow.AddMonths(1)
-                    };
+                        license = new License
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = trans.UserId,
+                            LicenseKey = Guid.NewGuid().ToString("N").ToUpper(),
+                            Plan = "PerTurn",
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                            ExpiredAt = DateTime.MaxValue,
+                        };
+                    }
+                    else
+                    {
+                        license = new License
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = trans.UserId,
+                            LicenseKey = Guid.NewGuid().ToString("N").ToUpper(),
+                            Plan = "Monthly",
+                            IsActive = true,
+                            CreatedAt = DateTime.UtcNow,
+                            ExpiredAt = DateTime.UtcNow.AddMonths(1)
+                        };
+                    }
                     _licenseRepo.Add(license);
                 }
                 else
                 {
-                    DateTime startExtendingFrom = (license.ExpiredAt > DateTime.UtcNow)
+                    bool isExpired = license.ExpiredAt.HasValue && license.ExpiredAt < DateTime.UtcNow;
+
+                    if (isExpired)
+                    {
+                        license.Plan = (transferAmount == 10000) ? "PerTurn" : "Monthly";
+                        license.CreatedAt = DateTime.UtcNow;
+                        license.ExpiredAt = (transferAmount == 10000)
+                                            ? DateTime.MaxValue
+                                            : DateTime.UtcNow.AddMonths(1);
+                        license.IsActive = true;
+                    }
+                    else
+                    {
+                        if (transferAmount == 10000)
+                        {
+                            await _uow.SaveChangesAsync();
+                            await _uow.CommitAsync();
+                            return false;
+                        }
+                        DateTime startExtendingFrom = (license.ExpiredAt > DateTime.UtcNow)
                         ? license.ExpiredAt.Value
                         : DateTime.UtcNow;
 
                     license.ExpiredAt = startExtendingFrom.AddMonths(1);
                     license.IsActive = true;
+                    }
+                    await _uow.SaveChangesAsync();
+                    await _uow.CommitAsync();
                 }
 
                 await _uow.SaveChangesAsync();

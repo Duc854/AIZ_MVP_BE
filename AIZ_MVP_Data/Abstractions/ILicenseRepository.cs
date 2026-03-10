@@ -11,7 +11,7 @@ namespace AIZ_MVP_Data.Abstractions
     {
         Task<License?> GetLicenseByUserId(Guid userId);
         Task<License?> GetLicenseByUserIdForUpdate(Guid userId);
-        Task<bool> HasValidLicenseAsync(Guid userId);
+        Task<License?> GetValidLicenseAsync(Guid userId);
         Task<License?> GetFreeTrialLicenseAsync(Guid userId);
         void Add(License license);
         void Remove(License license);
