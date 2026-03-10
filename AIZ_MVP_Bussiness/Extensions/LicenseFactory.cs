@@ -16,6 +16,7 @@ namespace AIZ_MVP_Bussiness.Extensions
                 Id = Guid.NewGuid(),
                 UserId = userId,
                 LicenseKey = $"FREE-{Guid.NewGuid().ToString().Substring(0, 8).ToUpper()}",
+                Plan = "free",
                 IsActive = true
             };
         }
